@@ -50,13 +50,15 @@ class Bird(pg.sprite.Sprite):
         self.gravity = 5
         self.gravity_k = 0.2
 
+        self.dead = False
+
     def jump_set(self):
         self.jump = 30
         self.gravity = 5
         self.jumpSpeed = 15
 
     def update(self):
-        if self.jump:
+        if self.jump and not self.dead:
             self.jumpSpeed -= 1
             self.birdY -= self.jumpSpeed
             self.jump -= 1
@@ -67,6 +69,9 @@ class Bird(pg.sprite.Sprite):
 
         if self.rect.y > 700 or self.rect.y < 0:
             self.kill()
+
+    def die(self):
+        self.dead = True
 
 
 class Column(pg.sprite.Sprite):
@@ -106,6 +111,10 @@ class Column(pg.sprite.Sprite):
         self.rect.x = self.wallx_start
 
 
+background = pg.image.load(path.join(img_dir, "Background.png")).convert()
+background = pg.transform.scale(background, (400, 700))
+background_rect = background.get_rect()
+
 all_sprites = pg.sprite.Group()
 columns = pg.sprite.Group()
 
@@ -128,7 +137,15 @@ while running:
             bird.jump_set()
 
     all_sprites.update()
+
+    hits = pg.sprite.spritecollide(bird, columns, False)
+    if hits:
+        bird.dead = True
+        for i in columns:
+            i.speed = 0.2
+
     screen.fill(BLACK)
+    screen.blit(background, background_rect)
     all_sprites.draw(screen)
     draw_text(screen, str(column.score), 45, WIDTH / 2, 10, RED)
     pg.display.flip()
