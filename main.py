@@ -21,6 +21,16 @@ screen = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Flappy Bird!")
 clock = pg.time.Clock()
 
+font_name = pg.font.match_font('arial')
+
+
+def draw_text(surf, text, size, x, y, color):
+    font = pg.font.Font(font_name, size)
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
+
 
 class Bird(pg.sprite.Sprite):
     def __init__(self):
@@ -118,9 +128,9 @@ while running:
             bird.jump_set()
 
     all_sprites.update()
-
     screen.fill(BLACK)
     all_sprites.draw(screen)
+    draw_text(screen, str(column.score), 45, WIDTH / 2, 10, RED)
     pg.display.flip()
 
 pg.quit()
