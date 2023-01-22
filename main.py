@@ -32,6 +32,23 @@ def draw_text(surf, text, size, x, y, color):
     surf.blit(text_surface, text_rect)
 
 
+def show_go_screen():
+    screen.blit(background, background_rect)
+    draw_text(screen, "Flappy Bird!", 64, WIDTH / 2, HEIGHT / 4, BLUE)
+    draw_text(screen, "Tap to jump", 44,
+              WIDTH / 2, HEIGHT / 2.5, BLUE)
+    draw_text(screen, "Press a key to begin", 18, WIDTH / 2, HEIGHT * 3 / 4, BLUE)
+    pg.display.flip()
+    waiting = True
+    while waiting:
+        clock.tick(FPS)
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+            if event.type == pg.KEYUP or event.type == pg.MOUSEBUTTONUP:
+                waiting = False
+
+
 class Bird(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
@@ -126,8 +143,23 @@ for i in ["top", "bot"]:
 bird = Bird()
 all_sprites.add(bird)
 
+game_over = True
 running = True
 while running:
+    if game_over:
+        show_go_screen()
+        game_over = False
+        all_sprites = pg.sprite.Group()
+        columns = pg.sprite.Group()
+
+        for i in ["top", "bot"]:
+            column = Column(i)
+            all_sprites.add(column)
+            columns.add(column)
+
+        bird = Bird()
+        all_sprites.add(bird)
+
     clock.tick(FPS)
     for event in pg.event.get():
 
@@ -144,6 +176,8 @@ while running:
         for i in columns:
             i.speed = 0.2
 
+    if not bird.alive():
+        game_over = True
     screen.fill(BLACK)
     screen.blit(background, background_rect)
     all_sprites.draw(screen)
