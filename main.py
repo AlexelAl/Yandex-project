@@ -3,6 +3,7 @@ import pygame as pg
 from os import path
 
 img_dir = path.join(path.dirname(__file__), 'img')
+snd_dir = path.join(path.dirname(__file__), 'snd')
 
 WIDTH = 400
 HEIGHT = 700
@@ -17,6 +18,7 @@ YELLOW = (255, 255, 0)
 PURPLE = (255, 0, 255)
 
 pg.init()
+pg.mixer.init()
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Flappy Bird!")
 clock = pg.time.Clock()
@@ -68,6 +70,7 @@ class Bird(pg.sprite.Sprite):
         self.gravity_k = 0.2
 
         self.dead = False
+        self.snd_indx = False
 
     def jump_set(self):
         self.jump = 30
@@ -89,6 +92,7 @@ class Bird(pg.sprite.Sprite):
 
     def die(self):
         self.dead = True
+        self.snd_indx = False
 
 
 class Column(pg.sprite.Sprite):
@@ -143,6 +147,16 @@ for i in ["top", "bot"]:
 bird = Bird()
 all_sprites.add(bird)
 
+hit_snd = pg.mixer.Sound(path.join(snd_dir, 'hit.mp3'))
+point_snd = pg.mixer.Sound(path.join(snd_dir, 'point.mp3'))
+wing_snd = pg.mixer.Sound(path.join(snd_dir, 'wing.mp3'))
+die_snd = pg.mixer.Sound(path.join(snd_dir, 'die.mp3'))
+
+pg.mixer.music.load(path.join(snd_dir, 'music.ogg'))
+pg.mixer.music.set_volume(0.4)
+pg.mixer.music.play(loops=-1)
+
+
 game_over = True
 running = True
 while running:
@@ -167,6 +181,7 @@ while running:
             running = False
         if event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONUP:
             bird.jump_set()
+            wing_snd.play()
 
     all_sprites.update()
 
@@ -175,9 +190,14 @@ while running:
         bird.dead = True
         for i in columns:
             i.speed = 0.2
+        if not bird.snd_indx:
+            hit_snd.play()
+            bird.snd_indx = True
 
     if not bird.alive():
         game_over = True
+        die_snd.play()
+
     screen.fill(BLACK)
     screen.blit(background, background_rect)
     all_sprites.draw(screen)
